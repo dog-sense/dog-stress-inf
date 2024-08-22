@@ -30,12 +30,14 @@ if __name__ == '__main__':
     # NOTE: Select Learning Resource
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
+    print("USE DEVICE:",device)
 
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
+    print("Start Train")
     # NOTE: Start Train
     model.train()
 
@@ -43,6 +45,7 @@ if __name__ == '__main__':
         running_loss = 0.0
         for inputs, labels in dataloader:
             optimizer.zero_grad()
+            inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
