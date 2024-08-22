@@ -1,6 +1,7 @@
-import shutil
 import os
 import random
+import shutil
+
 import matplotlib.pyplot as plt
 from PIL import Image
 
