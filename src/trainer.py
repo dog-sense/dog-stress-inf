@@ -89,5 +89,4 @@ if __name__ == '__main__':
             model.load_state_dict(best_model_wts)
             print("Best Model Loaded with val loss:", best_val_loss)
 
-            model_cpu = model.to("cpu")
-            torch.save(model_cpu.state_dict(), "best_model.pth")
+        torch.save(model.state_dict(), 'best_model.pth')
