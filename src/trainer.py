@@ -1,3 +1,4 @@
+import mlflow
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -51,42 +52,47 @@ if __name__ == '__main__':
     best_val_loss = float('inf')
     best_model_wts = None
 
-    for i in range(epoch):
-        running_loss = 0.0
-        for inputs, labels in train_loader:
-            optimizer.zero_grad()
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-
-            running_loss += loss.item()
-
-        train_loss = running_loss / len(train_loader)
-        print(f"Epoch: {i + 1}, Loss: {train_loss}")
-
-        # Validation Step
-        model.eval()
-        val_loss = 0.0
-        with torch.no_grad():
-            for inputs, labels in val_loader:
+    with mlflow.start_run():
+        for i in range(epoch):
+            running_loss = 0.0
+            for inputs, labels in train_loader:
+                optimizer.zero_grad()
                 inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
-                val_loss += loss.item()
+                loss.backward()
+                optimizer.step()
 
-        val_loss /= len(val_loader)
-        print(f"Epoch: {i + 1}, Loss: {val_loss}")
+                running_loss += loss.item()
 
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            best_model_wts = model.state_dict()
+            train_loss = running_loss / len(train_loader)
+            print(f"Epoch: {i + 1}, Loss: {train_loss}")
+            mlflow.log_metric("train_loss", train_loss, step=i)
 
-        model.train()
+            # Validation Step
+            model.eval()
+            val_loss = 0.0
+            with torch.no_grad():
+                for inputs, labels in val_loader:
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    outputs = model(inputs)
+                    loss = criterion(outputs, labels)
+                    val_loss += loss.item()
 
-        if best_model_wts is not None:
-            model.load_state_dict(best_model_wts)
-            print("Best Model Loaded with val loss:", best_val_loss)
+            val_loss /= len(val_loader)
+            print(f"Epoch: {i + 1}, Loss: {val_loss}")
+            mlflow.log_metric("val_loss", val_loss, step=i)
 
-        torch.save(model.state_dict(), 'best_model.pth')
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                best_model_wts = model.state_dict()
+
+            model.train()
+
+            if best_model_wts is not None:
+                model.load_state_dict(best_model_wts)
+                print("Best Model Loaded with val loss:", best_val_loss)
+
+            torch.save(model.state_dict(), 'best_model.pth')
+        mlflow.pytorch.log_model(model, "model")
+        mlflow.log_artifact('best_model.pth')
