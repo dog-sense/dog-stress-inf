@@ -6,6 +6,7 @@ from efficientnet_pytorch import EfficientNet
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import Compose, Resize, ToTensor
+import onnx
 
 if __name__ == '__main__':
     transform = Compose([
@@ -94,5 +95,7 @@ if __name__ == '__main__':
                 print("Best Model Loaded with val loss:", best_val_loss)
 
             torch.save(model.state_dict(), 'best_model.pth')
+            # save as onnx
+            torch.onnx.export(model, torch.randn(1, 3, 512, 512).to(device), 'best_model.onnx')
         mlflow.pytorch.log_model(model, "model")
         mlflow.log_artifact('best_model.pth')

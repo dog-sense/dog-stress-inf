@@ -9,7 +9,7 @@ def predict(image_path, model_path, device):
     model = EfficientNet.from_pretrained("efficientnet-b0")
     num_features = model._fc.in_features
     model._fc = nn.Linear(num_features, 6)
-    model.load_state_dict(torch.load(model_path))
+    model.load_state_dict(torch.load(model_path, torch.device("cpu")))
     model = model.to(device)
     model.eval()
 
@@ -29,7 +29,7 @@ def predict(image_path, model_path, device):
     return predicted.item()
 
 if __name__ == '__main__':
-    image_path = "path_to_your_image.jpg"
+    image_path = "data/inference/level_1_0.png"
     model_path = "best_model.pth"
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
