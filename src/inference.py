@@ -29,7 +29,7 @@ def predict(image_path, model_path, device):
     return predicted.item()
 
 if __name__ == '__main__':
-    image_path = "data/inference/level_1_0.png"
+    image_path = "data/inference/level_3_0.png"
     model_path = "best_model.pth"
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
